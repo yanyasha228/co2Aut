@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+
+<head>
+    <div th:replace="allPagesTemplates :: all_pages_head_data"></div>
+    <link rel="stylesheet" th:href="@{/csssource/item_list_stylesheet.css}">
+    <script th:src="@{/jssource/utils.js}"></script>
+    <script th:src="@{/jssource/product_edit.js}"></script>
+    <script th:src="@{/htmlhelpers/ckeditor/ckeditor.js}"></script>
+
+</head>
+<body>
+<div th:replace="allPagesTemplates :: navBar"></div>
+
+<div id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
+
+    <div class="carousel-inner">
+        <div class="carousel-item" th:each="prodImg, prodImgStat : ${product.getImages()}"
+             th:classappend="${prodImgStat.first}? 'active' : '' ">
+            <img class="d-block w-100" th:src="${prodImg.getUrl()}">
+        </div>
+    </div>
+    <a class="carousel-control-prev" href="#carouselExampleFade" role="button"
+       data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Предыдущая</span>
+    </a>
+    <a class="carousel-control-next" href="#carouselExampleFade" role="button"
+       data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Следующая</span>
+    </a>
+
+</div>
+
+<div class="table-wrapper">
+    <div class="table-title">
+        <div class="row">
+            <div class="col-sm-4">
+                <h2>ID : <b th:text="${product.getId()}"></b></h2>
+            </div>
+            <div class="col-sm-8">
+                <a th:href="${product.getProductUrlFromExternalResource()}"
+                   class="btn"><i class="material-icons">visibility</i>
+                    <span>Prom.ua</span></a>
+                <a href="#" class="btn btn-add"><i class="material-icons">&#xe147;</i>
+                    <span>Добавить фото</span></a>
+                <a th:href="@{/products/{id}/edit(id=${product.getId()})}" class="btn btn-primary"><i
+                        class="material-icons">&#xE863;</i>
+                    <span>Обновить</span></a>
+                <a href="#" class="btn btn-info"><i class="material-icons">&#xE24D;</i>
+                    <span>История покупок</span></a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="control-group" id="fields">
+            <div class="controls">
+                <form th:action="@{/products/{id}/edit/submit(id=${product.getId()})}" th:object="${product}" method="post" role="form" autocomplete="off">
+                    <input hidden
+                           type="text"
+                    th:field="${product.id}">
+
+                    <div th:each="prodImg , prodImgStat : *{images}">
+                        <input hidden th:field="*{images[__${prodImgStat.index}__].id}">
+                        <input hidden th:field="*{images[__${prodImgStat.index}__].url}">
+                        <input hidden th:field="*{images[__${prodImgStat.index}__].name}">
+
+                    </div>
+
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+
+                            <div class="form-row">
+                                <div class="form-group col-md-12"><label th:for="*{name}">Имя товара:</label>
+                                    <input
+                                            type="text"
+                                            class="form-control"
+                                            th:field="*{name}">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+
+                                <div class="form-group col-md-6"><label th:for="*{vendor}">Производитель:</label>
+                                    <input
+                                            type="text"
+                                            class="form-control"
+                                            th:field="*{vendor}">
+                                </div>
+
+                                <div class="form-group col-md-6"><label
+                                        th:for="*{countryOfOrigin}">Производитель:</label> <input
+                                        type="text"
+                                        class="form-control"
+                                        th:field="*{countryOfOrigin}">
+                                </div>
+
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6"><label th:for="*{productStock}">Склад:</label>
+                                    <select
+                                            th:field="*{productStock}"
+                                        class="form-control">
+                                    <option th:each="stockName : ${T(com.example.co2Automatic.models.ModelEnums.ProductStock).values()}"
+                                            th:value="${stockName}"
+                                            th:text="${stockName}"
+                                            th:selected="${product.getProductStock().name().equalsIgnoreCase(stockName)}">
+                                        Не выбрано
+                                    </option>
+
+
+                                </select>
+                                </div>
+
+                                <div class="form-group col-md-6"><label th:for="*{productCategory}">Категория:</label>
+                                    <select
+                                            th:field="*{productCategory}"
+                                            class="form-control">
+                                        <option th:each="productCategory : ${productCategories}"
+                                                th:value="${productCategory.getId()}"
+                                                th:text="${productCategory.getName()}"
+                                                th:selected="${product.getProductCategory().getName().equalsIgnoreCase(productCategory.getName())}">
+                                        </option>
+
+
+                                    </select></div>
+
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4"><label th:for="*{price}">Цена:</label> <input
+                                        type="text"
+                                        class="form-control"
+
+                                        th:field="*{price}"
+                                        onclick="numValidDouble(this)">
+                                </div>
+                                <div class="form-group col-md-4"><label th:for="*{wholeSalePrice}">Цена Опт:</label>
+                                    <input
+                                            type="text"
+                                            class="form-control"
+
+                                            th:field="*{wholeSalePrice}"
+                                            onclick="numValidDouble(this)"></div>
+
+                                <div class="form-group col-md-4"><label th:for="*{currency}">Валюта:</label>
+                                    <select th:field="*{currency}"
+                                            class="form-control">
+                                        <option th:each="productMoneyCurrency : ${T(com.example.co2Automatic.models.ModelEnums.MoneyCurrency).values()}"
+                                                th:value="${productMoneyCurrency}"
+                                                th:text="${productMoneyCurrency}"
+                                                th:selected="${product.getProductStock().name().equalsIgnoreCase(productMoneyCurrency)}">
+                                            Не выбрано
+                                        </option>
+
+
+                                    </select></div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-12"><label th:for="*{description}">Описание:</label>
+                                    <textarea
+                                              th:field="*{description}">Нет описания</textarea>
+                                    <script>
+                                        // Replace the <textarea id="editor1"> with a CKEditor
+                                        // instance, using default configuration.
+                                        CKEDITOR.replace('description',{
+                                            language:'ru'
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Сохранить</button>
+                            </div>
+                        </div>
+
+                        <div id="paramsDiv" class="form-group col-md-6">
+                            <label for="params">Параметры:</label>
+                            <div class="controls-1">
+
+                                <div id="params" class="entry" th:each="productParam , stat : *{params}">
+
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label th:for="${'paramName-' + stat.index}">Параметр</label>
+                                            <input th:field="*{params[__${stat.index}__].paramName}"
+                                                   th:id="${'paramName-' + stat.index}" class="form-control"
+                                                    type="text"/>
+                                        </div>
+
+                                        <div class="form-group col-md-5">
+                                            <label th:for="${'paramValue-' + stat.index}">Значение</label>
+                                            <input th:field="*{params[__${stat.index}__].paramValue}"
+                                                   th:id="${'paramValue-' + stat.index}" class="form-control"
+                                                   type="text"/>
+                                        </div>
+
+                                        <div class="form-group col-md-1">
+                            <span class="input-group-btn">
+                            <button class="btn btn-success btn-add" type="button">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                        </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <br>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
